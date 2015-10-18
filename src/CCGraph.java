@@ -3,6 +3,7 @@
 
  
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Scanner;
  
@@ -22,22 +23,23 @@ class CCGraph
             degree[i] = 0;
     }
  
-    void read_CCGraph(boolean directed)
+    void read_CCGraph(boolean directed,int numVertices, PriorityQueue<Arco>arcosBosques)
     {
         int x, y;
-        Scanner sc = new Scanner(System.in);
+        //Scanner sc = new Scanner(System.in);
         System.out.println("Enter the number of vertices: ");
-        nvertices = sc.nextInt();
+        nvertices = numVertices;
         System.out.println("Enter the number of edges: ");
-        int m = sc.nextInt();
+        int m = arcosBosques.size();
         System.out.println("Enter the edges: <from> <to>");
         for (int i = 1; i <= m; i++)
         {
-            x = sc.nextInt();
-            y = sc.nextInt();
+        	Arco a=arcosBosques.poll();
+            x = a.origen+1;
+            y = a.destino+1;
             insert_edge(x, y, directed);
         }
-        sc.close();
+        //sc.close();
     }
  
     void insert_edge(int x, int y, boolean directed)

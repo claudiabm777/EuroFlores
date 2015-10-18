@@ -1,5 +1,9 @@
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 public class ConnectedComponents
 {
@@ -7,8 +11,9 @@ public class ConnectedComponents
     static boolean   processed[]  = new boolean[MAXV];
     static boolean   discovered[] = new boolean[MAXV];
     static int       parent[]     = new int[MAXV];
+    public static List<List<Integer>>listaComponentes=new ArrayList<List<Integer>>();
  
-    static void bfs(CCGraph g, int start)
+    static void bfs(CCGraph g, int start,List<Integer>componente)
     {
         Queue<Integer> q = new LinkedList<Integer>();
         int i, v;
@@ -17,7 +22,7 @@ public class ConnectedComponents
         while (!q.isEmpty())
         {
             v = q.remove();
-            process_vertex(v);
+            process_vertex(v,componente);
             processed[v] = true;
             for (i = g.degree[v] - 1; i >= 0; i--)
             {
@@ -40,9 +45,10 @@ public class ConnectedComponents
         }
     }
  
-    static void process_vertex(int v)
+    static void process_vertex(int v,List<Integer>componente)
     {
-        System.out.printf(" %d", v);
+    	componente.add(v-1);
+        System.out.printf(" %d", v-1);
     }
  
     static void connected_components(CCGraph g)
@@ -54,19 +60,19 @@ public class ConnectedComponents
         {
             if (!discovered[i])
             {
+            	List<Integer>componente=new ArrayList<Integer>();;
+            	
                 c++;
                 System.out.printf("Component %d:", c);
-                bfs(g, i);
+                bfs(g, i,componente);
                 System.out.printf("\n");
+                listaComponentes.add(componente);
             }
         }
     }
  
-    static public void main(String[] args)
-    {
-        CCGraph g = new CCGraph();
-        g.read_CCGraph(false);
-        g.print_CCGraph();
-        connected_components(g);
-    }
+//    static public void main(String[] args)
+//    {
+//        
+//    }
 }

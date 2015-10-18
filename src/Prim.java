@@ -10,26 +10,27 @@ import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
 public class Prim {
-
-	public final static InputStream archivoDatos1=Prim.class.getResourceAsStream("datos.xls");
+	public static double [][] matriz;
+	public static double [][] matrizConCentroide;
+	public final static InputStream archivoDatos1=Prim.class.getResourceAsStream("darosCentroide.xls");
 	
 	
-	public static void main(String[] args){
-		PriorityQueue<Arco>colao=algoritmoPrim();
-		System.out.println(colao.poll().costo);
-	}
+//	public static void main(String[] args){
+//		PriorityQueue<Arco>colao=algoritmoPrim();
+//		System.out.println(colao.poll().costo);
+//	}
 	public static PriorityQueue<Arco> algoritmoPrim(){
 		PriorityQueue<Arco>cola=new PriorityQueue<Arco>();
 		Workbook workbook;
 		try {
 			workbook = Workbook.getWorkbook(archivoDatos1);
 		
-		Sheet sheet = workbook.getSheet("datos");
+		Sheet sheet = workbook.getSheet("s1");
 		
-		Cell a1 = sheet.getCell(1,1);
-		System.out.println(a1.getContents());
+		Cell a1 = sheet.getCell(0,1);
 		int t=80;
-		double [][] matriz = new double [t][t];
+		matriz = new double [t][t];
+		matrizConCentroide = new double [t+1][t+1];
 		int[] visitado = new int[t];
 		double min = 9999.0;
 		int c1 = 0;
@@ -40,14 +41,20 @@ public class Prim {
 			
 			visitado[i] = 0;
 			
-			for(int j = 0; j < t; j++){
-				matriz[i][j] = Double.parseDouble(sheet.getCell(i,j).getContents().replace(",", "."));
-				if(matriz[i][j]==0){
-					
-					matriz[i][j] = 9999.0;
-					
+			for(int j = 0; j < t+1; j++){
+				if(j<t){
+					matriz[i][j] = Double.parseDouble(sheet.getCell(i,j).getContents().replace(",", "."));
+					if(matriz[i][j]==0){
+						matriz[i][j] = 9999.0;
+
+					}
 				}
 				
+				matrizConCentroide[i][j] = Double.parseDouble(sheet.getCell(i,j).getContents().replace(",", "."));
+				if(matrizConCentroide[i][j]==0){
+					matrizConCentroide[i][j] = 9999.0;
+					
+				}
 			}
 			
 		}
