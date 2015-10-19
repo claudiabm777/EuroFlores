@@ -1,4 +1,10 @@
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+
+import javax.swing.JOptionPane;
 
 
 public class EuroFlores {
@@ -16,10 +22,13 @@ public class EuroFlores {
 	public Double costoConductores;
 	public Double costoGasolina;
 	public Double costosMensuales;
-	double [][] matrizConCentroide;
-	public EuroFlores(int k){
+	public double [][] matrizConCentroide;
+	public File archivoResultados;
+	
+	public EuroFlores(int k,File archivoResultados){
 		this.k=k;
 		costoConductores=k*COSTO_CONDUCTORES;
+		this.archivoResultados=archivoResultados;
 	}
 	
 	public void simulacionK(){
@@ -52,7 +61,11 @@ public class EuroFlores {
         		}
         	}
         	List<Integer>ruta=metodoPipe(costosTLS);
-        	listasDeRutas.add(ruta);
+        	List<Integer>rutaF=new ArrayList<Integer>();
+        	for (int j = 0; j < ruta.size(); j++) {
+				rutaF.add(comp.get(ruta.get(j)));
+			}
+        	listasDeRutas.add(rutaF);
 		} 
         //Calcular los costos y distancias
         distanciaTotal=distanciasTotales(listasDeRutas);
@@ -62,7 +75,63 @@ public class EuroFlores {
 	}
 	
 	public void reportarResultados(){
-		
+		try{
+		FileWriter fw = new FileWriter(archivoResultados.getAbsoluteFile());
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		bw.newLine();
+		bw.write("Archivo de resultados de la iteración con "+k+" zonas");
+		bw.newLine();
+		bw.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		bw.newLine();
+		bw.write("COMPONENTES: ");
+		bw.newLine();
+		for(int i=0;i<listaComponentes.size();i++){
+			bw.write("  Componente "+i+": ");
+			List<Integer>listaC=listaComponentes.get(i);
+			for (int j = 0; j < listaC.size(); j++) {
+				bw.write(listaC.get(j));
+				if(j!=listaC.size()-1){
+					bw.write(",");
+				}
+			}
+			bw.newLine();
+		}
+		bw.write("------------------------------------------------------------------");
+		bw.newLine();
+		bw.write("RUTAS: ");
+		bw.newLine();
+		for(int i=0;i<listasDeRutas.size();i++){
+			bw.write("  Ruta "+i+": ");
+			List<Integer>listaC=listasDeRutas.get(i);
+			for (int j = 0; j < listaC.size(); j++) {
+				bw.write(listaC.get(j));
+				if(j!=listaC.size()-1){
+					bw.write(",");
+				}
+			}
+			bw.newLine();
+			bw.write("  Costo de la ruta "+i+": "+costos.get(i));
+			bw.newLine();
+		}
+		bw.write("------------------------------------------------------------------");
+		bw.newLine();
+		bw.write("COSTO TRANSPORTE: "+costoGasolina);
+		bw.newLine();
+		bw.write("COSTO CONDUCTORES: "+costoConductores);
+		bw.newLine();
+		bw.write("COSTO TOTAL DE UNA JORNADA: "+costoTotal);
+		bw.newLine();
+		bw.write("COSTO DE OPERACIÓN MENSUAL: "+costosMensuales);
+		bw.newLine();
+		bw.write("TIEMPO COMPUTACIONAL: ");
+		bw.newLine();
+		bw.close();
+		JOptionPane.showMessageDialog (null, "El archivo se guardo con los parametros satisfactoriamente.", "Archivo Guardado", JOptionPane.INFORMATION_MESSAGE);
+		}catch(Exception e){
+			JOptionPane.showMessageDialog (null, "El archivo no se pudo guardar. Intentelo de nuevo", "Error", JOptionPane.ERROR_MESSAGE);
+
+		}
 	}
 	
 	public Double distanciasTotales(List<List<Integer>>listasDeRutas){
@@ -96,7 +165,7 @@ public class EuroFlores {
 	}
 	
 	public static void main(String[] args) {
-		EuroFlores f=new EuroFlores(9);
+		EuroFlores f=new EuroFlores(9,null);
 		f.simulacionK();
 	}
 }
