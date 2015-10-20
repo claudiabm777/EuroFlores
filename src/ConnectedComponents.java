@@ -11,7 +11,7 @@ public class ConnectedComponents
     static boolean   processed[]  = new boolean[MAXV];
     static boolean   discovered[] = new boolean[MAXV];
     static int       parent[]     = new int[MAXV];
-    public static List<List<Integer>>listaComponentes=new ArrayList<List<Integer>>();
+    public   List<List<Integer>>listaComponentes=new ArrayList<List<Integer>>();
  
     static void bfs(CCGraph g, int start,List<Integer>componente)
     {
@@ -51,7 +51,7 @@ public class ConnectedComponents
         System.out.printf(" %d", v-1);
     }
  
-    static void connected_components(CCGraph g)
+    static void connected_components(CCGraph g,List<List<Integer>>listaComponentes)
     {
         int c;
         initialize_search(g);
@@ -60,7 +60,7 @@ public class ConnectedComponents
         {
             if (!discovered[i])
             {
-            	List<Integer>componente=new ArrayList<Integer>();;
+            	List<Integer>componente=new ArrayList<Integer>();
             	
                 c++;
                 System.out.printf("Component %d:", c);
