@@ -11,9 +11,14 @@ public class EuroFlores {
 	public final static double COSTO_CONDUCTORES=500000.0;
 	public final static double COSTO_GASOLINA=1000.0;
 	public final static int JORNADAS=7;
+	public final static int VVRRPP_OPTIMIZACION=0;
+	public final static int VECINOS_MAS_CERCANOS=1;
+	public final static int KERNIGHAN_LIN=2;
+	public final static int TWO_OPT=3;
 	public Integer k;
 	public PriorityQueue<Arco>colaArbolExpMinimal;
 	public List<Double>distancias=new ArrayList<Double>();
+	public List<Double>tiemposTSP=new ArrayList<Double>();
 	public double distanciaTotal=0.0;
 	public List<Double>costos=new ArrayList<Double>();
 	public double costoTotal=0.0;
@@ -24,8 +29,8 @@ public class EuroFlores {
 	public Double costosMensuales;
 	public double [][] matrizConCentroide;
 	public File archivoResultados;
-	
-	public EuroFlores(int k,File archivoResultados){
+	public int metodo;
+	public EuroFlores(int k,File archivoResultados,int metodo){
 		colaArbolExpMinimal=null;
 		distancias=new ArrayList<Double>();
 		distanciaTotal=0.0;
@@ -36,7 +41,7 @@ public class EuroFlores {
 		costoGasolina=0.0;
 		costosMensuales=0.0;
 		matrizConCentroide=null;
-		
+		this.metodo=metodo;
 		this.k=k;
 		costoConductores=(k+1)*COSTO_CONDUCTORES;
 		this.archivoResultados=archivoResultados;
@@ -75,8 +80,36 @@ public class EuroFlores {
         			costosTLS[j][m]=matrizConCentroide[comp.get(j)][comp.get(m)];
         		}
         	}
-        	VRP e= new VRP(costosTLS);
-        	List<Integer>ruta=e.generateModel(costosTLS.length-1);
+        	double ti1=System.currentTimeMillis();
+        	List<Integer>ruta=new ArrayList<Integer>();
+	        	if(metodo==VVRRPP_OPTIMIZACION){
+	        	VRP e= new VRP(costosTLS);
+	        	ruta=e.generateModel(costosTLS.length-1);
+        	}else if(metodo==VECINOS_MAS_CERCANOS){
+	        	VecinoCercano vecino=new VecinoCercano();
+	        	ruta=vecino.VecinoC(costosTLS);
+        	}else if(metodo==KERNIGHAN_LIN){
+        		 ruta = kerniLinP(costosTLS);
+//        	}else if(metodo==TWO_OPT){
+//        		int[]rutam=new int[costosTLS.length];
+//        		int[][]costosTLSNN=new int[costosTLS.length][costosTLS.length];
+//        		for (int j = 0; j < costosTLS.length; j++) {
+//					for (int j2 = 0; j2 < costosTLS.length; j2++) {
+//						costosTLSNN[j][j2]=costosTLS[j][j2].intValue();
+//					}
+//				}
+//        		SimulatedAnnealing opt= new SimulatedAnnealing(costosTLSNN);
+//        		opt.simulatedAnnealing();
+//        		rutam=opt.getPath();
+//        		ruta=new ArrayList<Integer>();
+//        		for(int pp=0;pp<rutam.length;pp++){
+//        			ruta.add(rutam[pp]);
+//        			System.out.println(""+pp+" "+rutam[pp]);
+//        		}
+       	}
+        	double ti2=System.currentTimeMillis();
+        	double ti= (ti2-ti1)/1000.0;
+        	tiemposTSP.add(ti);
         	List<Integer>rutaF=new ArrayList<Integer>();
         	for (int j = 0; j < ruta.size(); j++) {
 				rutaF.add(comp.get(ruta.get(j)));
@@ -90,6 +123,58 @@ public class EuroFlores {
         costosMensuales=costoTotal*JORNADAS;
        	}
 	
+	public List<Integer> kerniLinP(Double[][]costosTLS){
+		List<List<Integer>> ans=new ArrayList<List<Integer>>();
+		List<Integer> respuesta=new ArrayList<Integer>();
+		
+		if(costosTLS.length%2==1){
+			Double[][]costosTLSN=new Double[costosTLS.length+1][costosTLS.length+1];
+			for(int o=0;o<costosTLS.length+1;o++){
+				for(int p=0;p<costosTLS.length+1;p++){
+					if(o==0||p==0){
+					costosTLSN[o][p]=0.0;
+					}else{
+						costosTLSN[o][p]=costosTLSN[o-1][p-1];
+					}
+				}
+			}
+			ans = KernighanLinProgram.KernighanLinProgram(costosTLSN);
+		}
+		else{
+			 ans = KernighanLinProgram.KernighanLinProgram(costosTLS);
+		}
+		List<Integer> l1=ans.get(0);
+		List<Integer> l2=ans.get(1);
+		if(l1.contains(costosTLS.length-1)){
+			for(int o=0;o<l1.size();o++){
+				if(l1.get(o)!=0){
+					respuesta.add(l1.get(o)-1);
+				}
+			}
+			for(int o=0;o<l2.size();o++){
+				if(l2.get(o)!=0){
+					respuesta.add(l2.get(o)-1);
+				}
+			}
+		}else{
+			for(int o=0;o<l2.size();o++){
+				if(l2.get(o)!=0){
+					respuesta.add(l2.get(o)-1);
+				}
+			}
+			for(int o=0;o<l1.size();o++){
+				if(l1.get(o)!=0){
+					respuesta.add(l1.get(o)-1);
+				}
+			}
+		}
+		ArrayList<Integer> a=new ArrayList<Integer>();
+		a.add(costosTLS.length-1);
+		respuesta.removeAll(a);
+		respuesta.add(0, costosTLS.length-1);
+		respuesta.add( costosTLS.length-1);
+		return respuesta;
+	}
 	public void simulacionKs(Prim prim){
 		//Ejecutar el algoritmo de prim. El lee el archivo .xls de los datos.
 		
@@ -122,8 +207,38 @@ public class EuroFlores {
         			costosTLS[j][m]=matrizConCentroide[comp.get(j)][comp.get(m)];
         		}
         	}
-        	VRP e= new VRP(costosTLS);
-        	List<Integer>ruta=e.generateModel(costosTLS.length-1);
+        	
+        	
+        	double ti1=System.currentTimeMillis();
+        	List<Integer>ruta=new ArrayList<Integer>();
+	        	if(metodo==VVRRPP_OPTIMIZACION){
+	        	VRP e= new VRP(costosTLS);
+	        	ruta=e.generateModel(costosTLS.length-1);
+        	}else if(metodo==VECINOS_MAS_CERCANOS){
+	        	VecinoCercano vecino=new VecinoCercano();
+	        	ruta=vecino.VecinoC(costosTLS);
+        	}else if(metodo==KERNIGHAN_LIN){
+        		 ruta = kerniLinP(costosTLS);
+//        	}else if(metodo==TWO_OPT){
+//        		int[]rutam=new int[costosTLS.length];
+//        		int[][]costosTLSNN=new int[costosTLS.length][costosTLS.length];
+//        		for (int j = 0; j < costosTLS.length; j++) {
+//					for (int j2 = 0; j2 < costosTLS.length; j2++) {
+//						costosTLSNN[j][j2]=costosTLS[j][j2].intValue();
+//					}
+//				}
+//        		SimulatedAnnealing opt= new SimulatedAnnealing(costosTLSNN);
+//        		opt.simulatedAnnealing();
+//        		rutam=opt.getPath();
+//        		ruta=new ArrayList<Integer>();
+//        		for(int pp=0;pp<rutam.length;pp++){
+//        			ruta.add(rutam[pp]);
+//        			System.out.println(""+pp+" "+rutam[pp]);
+//        		}
+       	}
+        	double ti2=System.currentTimeMillis();
+        	double ti= (ti2-ti1)/1000.0;
+        	tiemposTSP.add(ti);
         	List<Integer>rutaF=new ArrayList<Integer>();
         	for (int j = 0; j < ruta.size(); j++) {
 				rutaF.add(comp.get(ruta.get(j)));
@@ -144,7 +259,22 @@ public class EuroFlores {
 		BufferedWriter bw = new BufferedWriter(fw);
 		bw.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		bw.newLine();
-		bw.write("Archivo de resultados de la iteración con k = "+k+"");
+		if(metodo==VVRRPP_OPTIMIZACION){
+			bw.write("El metodo usado para este modelo fue: VRP Optimizacion con Gurobi");
+		}else if(metodo==VECINOS_MAS_CERCANOS){
+			bw.write("El metodo usado para este modelo fue: Vecinos mas cercanos");
+		
+		}else if(metodo==KERNIGHAN_LIN){
+			bw.write("El metodo usado para este modelo fue: Heuristica KL");
+		
+		}else if(metodo==TWO_OPT){
+			bw.write("El metodo usado para este modelo fue: Heuristica 2-Opt");
+		}
+		
+		bw.newLine();
+		bw.write("  ");
+		bw.newLine();
+		bw.write("Archivo de resultados de la iteración con k = "+(k+1)+"");
 		bw.newLine();
 		bw.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		bw.newLine();
@@ -178,6 +308,8 @@ public class EuroFlores {
 			bw.write("    + Costo de la ruta "+i+": "+costos.get(i));
 			bw.newLine();
 			bw.write("    + Distancia de la ruta "+i+": "+distancias.get(i));
+			bw.newLine();
+			bw.write("    + El tiempo computacional de TSP fue "+i+": "+tiemposTSP.get(i));
 			bw.newLine();
 		}
 		bw.write("------------------------------------------------------------------");
@@ -239,8 +371,8 @@ public class EuroFlores {
 //		return respuesta;
 //	}
 	
-//	public static void main(String[] args) {
-//		EuroFlores f=new EuroFlores(1,null);
-//		f.simulacionK();
-//	}
+	public static void main(String[] args) {
+		EuroFlores f=new EuroFlores(79,null,3);
+		f.simulacionK();
+	}
 }

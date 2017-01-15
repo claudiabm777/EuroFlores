@@ -9,9 +9,12 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 
 
@@ -23,24 +26,41 @@ public class InterfazPrincipal  extends JFrame implements ActionListener  {
 	
 	private JButton btnVecinos;
 	private JLabel lblVecinos;
+	private JList list;
+	private JList list2;
+	public int metodoSimple;
+	public int metdodoMultiple;
+	public String[] selections = { "VRP Optimizacion Gurobi", "Vecinos mas cercanos","Heuristica KL"};
 	public InterfazPrincipal(){
 		setTitle("Simulaciones Moviplus");
-		setSize(450,205);
+		setSize(450,198);
 		setResizable(false);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
 		mundo=new Simulaciones();
 		
+		
+	    list = new JList(selections);
+	    list.setSelectedIndex(0);
+	    list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	    list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+	    
+	    list2 = new JList(selections);
+	    list2.setSelectedIndex(0);
+	    list2.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	    list2.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+		
+		
 		JPanel panelSimSencilla=new JPanel();
-		panelSimSencilla.setLayout(new GridLayout(2,2));
-		panelSimSencilla.setPreferredSize(new Dimension(0,75));
+		panelSimSencilla.setLayout(new GridLayout(3,2));
+		panelSimSencilla.setPreferredSize(new Dimension(0,93));
 		TitledBorder border=BorderFactory.createTitledBorder("Realizar simulación con 1 k");
 		border.setTitleColor(Color.GRAY);
 		panelSimSencilla.setBorder(border);
 		
 		JPanel panelSimVecinos=new JPanel();
-		panelSimVecinos.setLayout(new GridLayout(1,2));
-		panelSimVecinos.setPreferredSize(new Dimension(0,50));
+		panelSimVecinos.setLayout(new GridLayout(2,2));
+		panelSimVecinos.setPreferredSize(new Dimension(0,93));
 		TitledBorder border3=BorderFactory.createTitledBorder("Realizar simulaciones con k: 1->79");
 		border3.setTitleColor(Color.GRAY);
 		panelSimVecinos.setBorder(border3);
@@ -50,6 +70,9 @@ public class InterfazPrincipal  extends JFrame implements ActionListener  {
 		btnSencilla=new JButton("Comenzar!");
 		btnSencilla.setActionCommand("SENCILLA");
 		btnSencilla.addActionListener(this);
+		panelSimSencilla.add(new JLabel("Seleccione el metodo de TSP:"));
+		panelSimSencilla.add(new JScrollPane(list));
+		
 		panelSimSencilla.add(lblSencilla);
 		panelSimSencilla.add(txtSencilla);
 		panelSimSencilla.add(new JLabel(""));
@@ -59,6 +82,8 @@ public class InterfazPrincipal  extends JFrame implements ActionListener  {
 		btnVecinos=new JButton("Comenzar!");
 		btnVecinos.setActionCommand("MULTIPLE");
 		btnVecinos.addActionListener(this);
+		panelSimVecinos.add(new JLabel("Seleccione el metodo de TSP:"));
+		panelSimVecinos.add(new JScrollPane(list2));
 		panelSimVecinos.add(lblVecinos);
 		panelSimVecinos.add(btnVecinos);
 		
@@ -80,11 +105,13 @@ public class InterfazPrincipal  extends JFrame implements ActionListener  {
 		if(comando.equals("SENCILLA")){
 			try{
 			int t=Integer.parseInt(txtSencilla.getText().trim());
-			if(t<=1||t>80){
-				JOptionPane.showMessageDialog (null, "k no debe ser menor o igual a uno, ni mayor a 80. Vuelva a intentarlo.", "Error", JOptionPane.ERROR_MESSAGE);
+			if(t<1||t>80){
+				JOptionPane.showMessageDialog (null, "k no debe ser menor a uno, ni mayor a 80. Vuelva a intentarlo.", "Error", JOptionPane.ERROR_MESSAGE);
 
 			}else{
-			mundo.simulacion1K(t-1);
+			int index=list.getSelectedIndex();	
+			System.out.println("Index: "+list.getSelectedIndex());
+			mundo.simulacion1K(t-1,index);
 			
 			}
 			}catch(Exception ex){
@@ -94,7 +121,8 @@ public class InterfazPrincipal  extends JFrame implements ActionListener  {
 			
 		}
 		else if(comando.equals("MULTIPLE")){
-			mundo.simulacionTodasLasK();
+			int index=list2.getSelectedIndex();	
+			mundo.simulacionTodasLasK(index);
 		}
 	}
 }

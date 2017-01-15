@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 
 
 public class Simulaciones {
-	public void simulacion1K(int k){
+	public void simulacion1K(int k,int metodo){
 		
 		JFrame parentFrame = new JFrame();
 		 
@@ -24,7 +24,7 @@ public class Simulaciones {
 		if (userSelection == JFileChooser.APPROVE_OPTION) {
 		    File fileToSave = fileChooser.getSelectedFile();
 		    double time1= System.currentTimeMillis();
-		    EuroFlores ef=new EuroFlores(k, fileToSave);
+		    EuroFlores ef=new EuroFlores(k, fileToSave,metodo);
 		    ef.simulacionK();
 		    double time2= System.currentTimeMillis();
 		    double time=(time2-time1)/1000.0;
@@ -37,11 +37,22 @@ public class Simulaciones {
 
 		}
 	}
-	public void imprimirResultados(List<EuroFlores>listaEF,File archivoResultados,EuroFlores mejor,double time){
+	public void imprimirResultados(List<EuroFlores>listaEF,File archivoResultados,EuroFlores mejor,double time,int metodo){
 		try{
 		FileWriter fw = new FileWriter(archivoResultados.getAbsoluteFile());
 		
 		BufferedWriter bw = new BufferedWriter(fw);
+		if(metodo==EuroFlores.VVRRPP_OPTIMIZACION){
+			bw.write("El metodo usado para estas simulaciones fue: VRP Optimizacion con Gurobi");
+		}else if(metodo==EuroFlores.VECINOS_MAS_CERCANOS){
+			bw.write("El metodo usado para estas simulaciones fue: Vecinos mas cercanos");
+		}else if(metodo==EuroFlores.KERNIGHAN_LIN){
+			bw.write("El metodo usado para este modelo fue: Heuristica KL");
+		
+		}else if(metodo==EuroFlores.TWO_OPT){
+			bw.write("El metodo usado para este modelo fue: Heuristica 2-Opt");
+		}
+		bw.newLine();
 		for(int p=0;p<listaEF.size();p++){
 			EuroFlores e=listaEF.get(p);
 			
@@ -82,6 +93,8 @@ public class Simulaciones {
 					bw.write("    + Costo de la ruta "+i+": "+e.costos.get(i));
 					bw.newLine();
 					bw.write("    + Distancia de la ruta "+i+": "+e.distancias.get(i));
+					bw.newLine();
+					bw.write("    + El tiempo computacional de TSP fue "+i+": "+e.tiemposTSP.get(i));
 					bw.newLine();
 				}
 				bw.write("------------------------------------------------------------------");
@@ -131,7 +144,7 @@ public class Simulaciones {
 		bw.newLine();
 		bw.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		bw.newLine();
-		bw.write("Archivo de resultados con la mejor iteración k = "+(mejor.k)+"");
+		bw.write("Archivo de resultados con la mejor iteración k = "+(mejor.k+1)+"");
 		bw.newLine();
 		bw.write("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		bw.newLine();
@@ -189,7 +202,7 @@ public class Simulaciones {
 		}
 	}
 	
-	public void simulacionTodasLasK(){
+	public void simulacionTodasLasK(int metodo){
 
 		JFrame parentFrame = new JFrame();
 		 
@@ -204,24 +217,31 @@ public class Simulaciones {
 		    List<EuroFlores>listaEF=new ArrayList<EuroFlores>();
 		    Prim prim=new Prim();
 		    PriorityQueue<Arco>colaArbolExpMinimal=prim.algoritmoPrim();
-		    EuroFlores mejor=new EuroFlores(1,null);
-		    mejor.costoTotal=99999999999999999.99999999;
-		    for(int i=1;i<80;i++){
-			    EuroFlores ef=new EuroFlores(i, null);
+		    EuroFlores mejor=new EuroFlores(1,null,metodo);
+		    mejor.costoTotal=9999999999999999999999.99999999;
+		    for(int i=0;i<80;i++){
+			    EuroFlores ef=new EuroFlores(i, null,metodo);
 			   // System.out.println("k: "+ef.k);
 			    ef.colaArbolExpMinimal=new PriorityQueue<Arco>(colaArbolExpMinimal);
 			    
-			    
 			    ef.simulacionKs(prim);
 			    
-			    listaEF.add(ef);
-			    if(mejor.costoTotal>=ef.costoTotal){
-			    	mejor=ef;
+			    if(metodo>=2){
+			    	if(mejor.costoTotal>=ef.costoTotal){
+			    		mejor=ef;
+			    	}
+			    }else{
+			    	if(mejor.costoTotal>=ef.costoTotal){
+			    		mejor=ef;
+			    	}else{
+			    		break;
+			    	}
 			    }
+			    listaEF.add(ef);
 		    }
 		    double time2= System.currentTimeMillis();
 		    double time=(time2-time1)/1000.0;
-		    imprimirResultados(listaEF, fileToSave,mejor,time);
+		    imprimirResultados(listaEF, fileToSave,mejor,time,metodo);
 		    JOptionPane.showMessageDialog (null, "Se llevó a cabo la simulación exitosamente. Consulte el archivo", "Succes!", JOptionPane.INFORMATION_MESSAGE);
 
 		}else{

@@ -117,15 +117,15 @@ public class VRP {
 				//System.out.println( cycles(center).size()==c.length);
 				
 				
-				model.write("model"+count+".lp");
-				//System.out.println("***************************");	
-				for (int i = 0; i < c.length; i++) {
-					for (int j = 0; j < c.length; j++) {
-						if(i!=j && x[i][j].get(GRB.DoubleAttr.X)>0.0){
-							//System.out.println(i+"->"+j);					
-						}
-					}
-				}
+//				model.write("model"+count+".lp");
+//				//System.out.println("***************************");	
+//				for (int i = 0; i < c.length; i++) {
+//					for (int j = 0; j < c.length; j++) {
+//						if(i!=j && x[i][j].get(GRB.DoubleAttr.X)>0.0){
+//							//System.out.println(i+"->"+j);					
+//						}
+//					}
+//				}
 				
 				
 				//================***************=============
@@ -151,10 +151,11 @@ public class VRP {
 			}
 			sol= cycles(center);
 			sol.add(0, center);
-			System.out.println("ROUTE: "+sol+ "	Iterations: "+count);
+			//System.out.println("ROUTE: "+sol+ "	Iterations: "+count);
 			//*********************************************************************
 			
-			
+			model.dispose();
+			env.dispose();	
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
